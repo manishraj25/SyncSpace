@@ -42,7 +42,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="flex justify-center min-h-[92vh] bg-gray-100 w-full pt-10">
+    <div className="flex justify-center min-h-[92vh]  w-full pt-10">
       <form
         onSubmit={handleSubmit}
         className="py-14 w-[37vw] bg-gray-100 h-full "

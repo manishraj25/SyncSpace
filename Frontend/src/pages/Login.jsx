@@ -28,10 +28,10 @@ const Login = () => {
     };
 
     return (
-        <div  className="flex justify-center items-center min-h-[90vh] bg-gray-100 w-full">
+        <div  className="flex justify-center items-center min-h-[90vh]  w-full">
             <div className=" px-20 py-14 rounded-lg shadow-lg w-[37vw]">
                 <form onSubmit={handleSubmit} >
-                    <h2 className="text-2xl font-semibold mb-6 text-center">Log in to GigConnect</h2>
+                    <h2 className="text-2xl font-semibold mb-6 text-center">Log in to <span className="text-green-600">SyncSpace</span></h2>
                     <input
                         name="email"
                         type="email"

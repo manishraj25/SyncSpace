@@ -12,7 +12,7 @@ function App() {
   return (
     <>
       <HomeNavbar />
-      <div className="min-h-[80vh]">
+      <div className="min-h-[81.4vh] bg-white">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
