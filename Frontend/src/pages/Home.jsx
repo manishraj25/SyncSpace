@@ -14,7 +14,7 @@ const Home = () => {
                 />
                 <div className="p-8 bg-white">
                     <h1 className="text-4xl font-bold mb-4 text-center">
-                        Welcome to <span className="text-green-600">SyncSpace</span>
+                        Welcome to Sync<span className="text-green-600">Space</span>
                     </h1>
                     <p className="text-lg mb-6 text-center">
                         Your all-in-one platform to connect, collaborate, and manage your projects with ease.
