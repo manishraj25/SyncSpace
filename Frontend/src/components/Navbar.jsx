@@ -1,11 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import ThemeToggle from "./ThemeToggle";
 import { MenuIcon } from "lucide-react";
 
 const Navbar = ({ onMobileToggle }) => {
   return (
-    <nav className="w-full bg-white dark:bg-gray-800 border-b dark:border-gray-700 px-4 sm:px-6 py-3 flex items-center justify-between">
+    <nav className="w-full bg-white  px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between sticky top-0 z-50 border-b border-gray-200">
       <div className="flex items-center gap-4">
         {/* mobile toggle button */}
         <button
@@ -20,10 +19,6 @@ const Navbar = ({ onMobileToggle }) => {
           <span className="text-current">Sync</span>
           <span className="text-green-600 dark:text-green-400">Space</span>
         </Link>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <ThemeToggle />
       </div>
     </nav>
   );

@@ -47,13 +47,13 @@ const KanbanBoard = () => {
           {state.columns.map((col) => (
             <Droppable droppableId={col.id} key={col.id}>
               {(provided) => (
-                <div ref={provided.innerRef} {...provided.droppableProps} className="bg-gray-50 dark:bg-gray-800 p-3 rounded-md flex-1 min-h-[200px]">
+                <div ref={provided.innerRef} {...provided.droppableProps} className="bg-gray-50 p-3 rounded-md flex-1 min-h-[200px]">
                   <h3 className="font-semibold mb-2">{col.title}</h3>
                   {col.tasks.map((task, idx) => (
                     <Draggable draggableId={task.id} index={idx} key={task.id}>
                       {(p) => (
                         <div ref={p.innerRef} {...p.draggableProps} {...p.dragHandleProps}
-                          className="bg-white dark:bg-gray-900 p-3 rounded-md mb-3 shadow-sm hover:shadow-md transition"
+                          className="bg-white p-3 rounded-md mb-3 shadow-sm hover:shadow-md transition"
                         >
                           {task.title}
                         </div>

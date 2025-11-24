@@ -4,7 +4,6 @@ import Footer from './components/Footer';
 import LandingPage from './pages/LandingPage.jsx';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import DashboardLayout from './pages/DashboardLayout.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 
