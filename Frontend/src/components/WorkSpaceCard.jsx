@@ -1,22 +1,13 @@
 import React from "react";
-import { Users, Clock, FileText } from "lucide-react";
 
-const WorkspaceCard = ({ ws }) => {
+export default function WorkspaceCard({ ws }){
   return (
-    <div className="bg-white shadow-md rounded-lg p-4 hover:shadow-lg transition">
+    <div className="bg-white p-4 rounded shadow">
       <div className="flex items-center justify-between">
-        <div className="text-lg font-semibold">{ws.title}</div>
-        <div className="text-sm text-gray-500 ">{ws.members} members</div>
+        <h4 className="font-semibold">{ws.title}</h4>
+        <small className="text-sm text-gray-500">{ws.members} members</small>
       </div>
-      <p className="mt-2 text-sm text-gray-600 ">{ws.description}</p>
-
-      <div className="mt-4 flex items-center gap-3 text-sm text-gray-500 ">
-        <div className="flex items-center gap-1"><Users size={14} /> {ws.members}</div>
-        <div className="flex items-center gap-1"><Clock size={14} /> {ws.updated}</div>
-        <div className="flex items-center gap-1"><FileText size={14} /> {ws.files}</div>
-      </div>
+      <p className="text-sm text-gray-600 mt-2">{ws.description}</p>
     </div>
   );
 }
-
-export default WorkspaceCard;

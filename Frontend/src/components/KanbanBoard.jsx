@@ -1,66 +1,54 @@
 import React, { useState } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import TaskDrawer from "./TaskDrawer";
 
 const initial = {
   columns: [
-    { id: "todo", title: "To Do", tasks: [{ id: "t1", title: "Design homepage" }, { id: "t2", title: "Setup auth" }] },
-    { id: "inprogress", title: "In Progress", tasks: [{ id: "t3", title: "Build sidebar" }] },
-    { id: "done", title: "Done", tasks: [{ id: "t4", title: "Init repo" }] },
-  ],
+    { id: "todo", title: "To Do", tasks: [{ id: "1", title: "Design header" }, { id: "2", title: "Auth flows" }] },
+    { id: "in", title: "In Progress", tasks: [{ id: "3", title: "Integrate API" }] },
+    { id: "done", title: "Done", tasks: [{ id: "4", title: "Init project" }] },
+  ]
 };
 
-const KanbanBoard = () => {
+export default function KanbanBoard(){
   const [state, setState] = useState(initial);
+  const [drawerTask, setDrawerTask] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const onDragEnd = (result) => {
-    const { destination, source } = result;
+  const onDragEnd = result => {
+    const { source, destination } = result;
     if (!destination) return;
-    if (destination.droppableId === source.droppableId && destination.index === source.index) return;
-
-    const sourceColIndex = state.columns.findIndex(c => c.id === source.droppableId);
-    const destColIndex = state.columns.findIndex(c => c.id === destination.droppableId);
-    const sourceCol = state.columns[sourceColIndex];
-    const destCol = state.columns[destColIndex];
-
-    const moving = [...sourceCol.tasks];
-    const [movedTask] = moving.splice(source.index, 1);
-
-    if (sourceCol === destCol) {
-      moving.splice(destination.index, 0, movedTask);
-      const newColumns = [...state.columns];
-      newColumns[sourceColIndex] = { ...sourceCol, tasks: moving };
-      setState({ columns: newColumns });
-    } else {
-      const destTasks = [...destCol.tasks];
-      destTasks.splice(destination.index, 0, movedTask);
-      const newColumns = [...state.columns];
-      newColumns[sourceColIndex] = { ...sourceCol, tasks: [...sourceCol.tasks.filter(t => t.id !== movedTask.id)] };
-      newColumns[destColIndex] = { ...destCol, tasks: destTasks };
-      setState({ columns: newColumns });
-    }
+    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
+    const cols = [...state.columns];
+    const sIdx = cols.findIndex(c=>c.id===source.droppableId);
+    const dIdx = cols.findIndex(c=>c.id===destination.droppableId);
+    const task = cols[sIdx].tasks[source.index];
+    cols[sIdx].tasks.splice(source.index,1);
+    cols[dIdx].tasks.splice(destination.index,0,task);
+    setState({ columns: cols });
   };
 
   return (
-    <div className="w-full">
+    <div>
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex gap-4">
-          {state.columns.map((col) => (
+          {state.columns.map(col => (
             <Droppable droppableId={col.id} key={col.id}>
               {(provided) => (
-                <div ref={provided.innerRef} {...provided.droppableProps} className="bg-gray-50 p-3 rounded-md flex-1 min-h-[200px]">
+                <div ref={provided.innerRef} {...provided.droppableProps} className="bg-gray-50 p-3 rounded flex-1 min-h-[150px]">
                   <h3 className="font-semibold mb-2">{col.title}</h3>
-                  {col.tasks.map((task, idx) => (
-                    <Draggable draggableId={task.id} index={idx} key={task.id}>
+                  {col.tasks.map((t, idx) => (
+                    <Draggable key={t.id} draggableId={t.id} index={idx}>
                       {(p) => (
                         <div ref={p.innerRef} {...p.draggableProps} {...p.dragHandleProps}
-                          className="bg-white p-3 rounded-md mb-3 shadow-sm hover:shadow-md transition"
+                          className="bg-white p-3 rounded mb-2 shadow cursor-pointer"
+                          onClick={()=>{ setDrawerTask(t); setDrawerOpen(true); }}
                         >
-                          {task.title}
+                          {t.title}
                         </div>
                       )}
                     </Draggable>
                   ))}
-
                   {provided.placeholder}
                 </div>
               )}
@@ -68,8 +56,8 @@ const KanbanBoard = () => {
           ))}
         </div>
       </DragDropContext>
+
+      <TaskDrawer open={drawerOpen} onClose={()=>setDrawerOpen(false)} task={drawerTask} />
     </div>
   );
 }
-
-export default KanbanBoard;

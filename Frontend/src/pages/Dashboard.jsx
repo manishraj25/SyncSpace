@@ -3,20 +3,24 @@ import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import WorkspaceCard from "../components/WorkSpaceCard";
 import KanbanBoard from "../components/KanbanBoard";
-import Home from "./Home";
+import AnalyticsPanel from "../components/AnalyticsPanel";
+import ActivityFeed from "../components/ActivityFeed";
+import FileManager from "../components/FileManager";
+import ChatPanel from "../components/ChatPanel";
+import NotificationCard from "../components/Notifications";
 import Workspaces from "./Workspaces";
 import Todo from "./Todo";
-import Notifications from "./Notifications";
 import Profile from "./Profile";
+import Notifications from "./Notifications";
 
 const Dashboard = () => {
     const [active, setActive] = useState("home");
     const [collapsed, setCollapsed] = useState(true); // mobile: hidden by default
 
     const sampleWorkspaces = [
-        { title: "Design System", description: "UI components and tokens", members: 6, updated: "2d", files: 12 },
-        { title: "Landing Page", description: "Marketing site tasks", members: 3, updated: "1d", files: 4 },
-        { title: "Backend API", description: "Auth, DB & sockets", members: 5, updated: "3d", files: 8 },
+        { title: "Design System", description: "UI components and tokens", members: 6 },
+        { title: "Landing Page", description: "Marketing site tasks", members: 3 },
+        { title: "Backend API", description: "Auth, DB & sockets", members: 5 },
     ];
 
     return (
@@ -48,27 +52,39 @@ const Dashboard = () => {
                     <div>
                         {active === "home" && (
                             <>
-                                <Home />
-                                <section className="mt-8">
-                                    <h2 className="text-lg font-semibold mb-4">Your Workspaces</h2>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {sampleWorkspaces.map((ws, i) => (
-                                            <WorkspaceCard key={i} ws={ws} />
-                                        ))}
-                                    </div>
-                                </section>
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                    <div className="lg:col-span-2 space-y-4">
+                                        <AnalyticsPanel />
+                                        <div className="mt-8">
+                                            <h2 className="text-lg font-semibold mb-4">Your Workspaces</h2>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                {sampleWorkspaces.map((ws, i) => (
+                                                    <WorkspaceCard key={i} ws={ws} />
+                                                ))}
+                                            </div>
+                                        </div>
 
-                                <section className="mt-8">
-                                    <h2 className="text-lg font-semibold mb-4">Quick Todo Board</h2>
-                                    <KanbanBoard />
-                                </section>
+                                        <div className="mt-4 bg-white p-4 rounded shadow">
+                                            <h3 className="font-semibold mb-3">Kanban</h3>
+                                            <KanbanBoard />
+                                        </div>
+
+                                    </div>
+
+                                    <aside className="space-y-4">
+                                        <ActivityFeed />
+                                        <FileManager />
+                                        <ChatPanel />
+                                        <NotificationCard />
+                                    </aside>
+                                </div>
                             </>
                         )}
 
                         {active === "workspaces" && <Workspaces />}
                         {active === "todo" && <Todo />}
-                        {active === "notifications" && <Notifications />}
                         {active === "profile" && <Profile />}
+                        {active === "notifications" && <Notifications />}
                     </div>
                 </main>
             </div>
