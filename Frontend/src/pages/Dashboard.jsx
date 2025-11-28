@@ -4,12 +4,7 @@ import Sidebar from "../components/Sidebar";
 import WorkspaceCard from "../components/WorkSpaceCard";
 import KanbanBoard from "../components/KanbanBoard";
 import AnalyticsPanel from "../components/AnalyticsPanel";
-import ActivityFeed from "../components/ActivityFeed";
-import FileManager from "../components/FileManager";
-import ChatPanel from "../components/ChatPanel";
-import NotificationCard from "../components/Notifications";
 import Workspaces from "./Workspaces";
-import Todo from "./Todo";
 import Profile from "./Profile";
 import Notifications from "./Notifications";
 
@@ -70,19 +65,11 @@ const Dashboard = () => {
                                         </div>
 
                                     </div>
-
-                                    <aside className="space-y-4">
-                                        <ActivityFeed />
-                                        <FileManager />
-                                        <ChatPanel />
-                                        <NotificationCard />
-                                    </aside>
                                 </div>
                             </>
                         )}
 
                         {active === "workspaces" && <Workspaces />}
-                        {active === "todo" && <Todo />}
                         {active === "profile" && <Profile />}
                         {active === "notifications" && <Notifications />}
                     </div>
