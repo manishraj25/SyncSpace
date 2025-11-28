@@ -9,32 +9,30 @@ const sendToken = (user, res, message = "Success") => {
   const token = jwt.sign(
     { id: user._id },
     process.env.JWT_SECRET,
-    { expiresIn: "7d" }
+    { expiresIn: process.env.JWT_EXPIRES || "7d" }
   );
 
   const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    maxAge: parseInt(process.env.JWT_EXPIRES_MS) || 7 * 24 * 60 * 60 * 1000, // default 7 days
   };
 
-  res.cookie("token", token, cookieOptions).json({
+  res.cookie("token", token, cookieOptions).status(200).json({
     success: true,
     message,
     user: {
       id: user._id,
       name: user.name,
       email: user.email,
-      avatar: user.avatar,
-      bio: user.bio,
-      role: user.role,
-      status: user.status,
+      avatar: user.avatar || "",
+      bio: user.bio || "",
+      status: user.status || "",
       isVerified: user.isVerified,
     },
   });
 };
-
 
 // SIGNUP
 export const signup = async (req, res) => {
@@ -42,29 +40,24 @@ export const signup = async (req, res) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      return res.status(400).json({ success: false, message: "All fields required" });
+      return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
-    let userExists = await User.findOne({ email });
-    if (userExists) {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       return res.status(400).json({ success: false, message: "Email already registered" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-    });
+    const user = await User.create({ name, email, password: hashedPassword });
 
     sendToken(user, res, "Signup successful");
-  } catch (error) {
-    console.log("Signup Error:", error);
+  } catch (err) {
+    console.error("Signup Error:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
 
 // LOGIN
 export const login = async (req, res) => {
@@ -72,7 +65,7 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ success: false, message: "Email & Password required" });
+      return res.status(400).json({ success: false, message: "Email and password are required" });
     }
 
     const user = await User.findOne({ email });
@@ -89,12 +82,11 @@ export const login = async (req, res) => {
     await user.save();
 
     sendToken(user, res, "Login successful");
-  } catch (error) {
-    console.log("Login Error:", error);
+  } catch (err) {
+    console.error("Login Error:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
 
 // LOGOUT
 export const logout = async (req, res) => {
@@ -102,18 +94,19 @@ export const logout = async (req, res) => {
     res.cookie("token", "", {
       httpOnly: true,
       expires: new Date(0),
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
     });
 
-    res.json({
+    res.status(200).json({
       success: true,
       message: "Logged out successfully",
     });
-  } catch (error) {
-    console.log("Logout Error:", error);
+  } catch (err) {
+    console.error("Logout Error:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
 
 // GET PROFILE
 export const getProfile = async (req, res) => {
@@ -125,12 +118,12 @@ export const getProfile = async (req, res) => {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    res.json({
+    res.status(200).json({
       success: true,
       user,
     });
-  } catch (error) {
-    console.log("GetProfile Error:", error);
+  } catch (err) {
+    console.error("GetProfile Error:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };

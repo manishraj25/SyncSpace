@@ -9,7 +9,7 @@ const workspaceSchema = new mongoose.Schema({
   members: [
     {
       user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-      role: { type: String, enum: ["admin", "member"], default: "member" }
+      role: { type: String, enum: ["admin", "manager", "member"], default: "member" }
     }
   ],
 

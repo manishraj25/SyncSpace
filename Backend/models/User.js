@@ -6,11 +6,6 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     avatar: { type: String, default: "" },
     bio: { type: String, default: "" },
-    role: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Role",
-        default: null
-    },
     workspaces: [{ type: mongoose.Schema.Types.ObjectId, ref: "Workspace" }],
     lastActive: { type: Date },
     verifyOtp: { type: String, default: '' },
