@@ -10,6 +10,14 @@ import authRouter from './routes/authRoutes.js';
 import messageRouter from './routes/messageRoutes.js';
 import chatRoomRouter from './routes/chatRoomRoutes.js';
 import workspaceRouter from './routes/workspaceRoutes.js';
+import documentRouter from './routes/documentRoutes.js';
+import fileRouter from './routes/fileRoutes.js';
+import userRouter from './routes/userRoutes.js';
+import notificationRouter from './routes/notificationRoutes.js';
+import projectRouter from './routes/projectRoutes.js';
+import taskRouter from './routes/taskRoutes.js';
+import commentRouter from './routes/commentRoutes.js';
+import kanbanRouter from './routes/kanbanRoutes.js';
 
 
 dotenv.config();
@@ -42,6 +50,14 @@ app.use('/api/auth', authRouter);
 app.use('/api/messages', messageRouter);
 app.use('/api/chatroom', chatRoomRouter);
 app.use('/api/workspaces', workspaceRouter);
+app.use('/api/documents', documentRouter);
+app.use('/api/files', fileRouter);
+app.use('/api/users', userRouter);
+app.use('/api/notifications', notificationRouter);
+app.use('/api/projects', projectRouter);
+app.use('/api/tasks', taskRouter);
+app.use('/api/comments', commentRouter);
+app.use('/api/kanban', kanbanRouter);
 
 
 const port = process.env.PORT || 4000;

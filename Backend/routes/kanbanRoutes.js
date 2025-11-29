@@ -1,12 +1,12 @@
 import express from "express";
 import { createBoard, editBoard, deleteBoard, getBoards } from "../controllers/kanbanController.js";
-import { protect } from "../middlewares/authMiddleware.js";
+import { isAuthenticated } from "../middleware/authMiddleware.js";
 
-const router = express.Router();
+const kanbanRouter = express.Router();
 
-router.post("/", protect, createBoard);             // Create Board
-router.get("/:projectId", protect, getBoards);      // Get Boards of Project
-router.put("/:boardId", protect, editBoard);        // Edit Board
-router.delete("/:boardId", protect, deleteBoard);   // Delete Board
+kanbanRouter.post("/", isAuthenticated, createBoard);             // Create Board
+kanbanRouter.get("/:projectId", isAuthenticated, getBoards);      // Get Boards of Project
+kanbanRouter.put("/:boardId", isAuthenticated, editBoard);        // Edit Board
+kanbanRouter.delete("/:boardId", isAuthenticated, deleteBoard);   // Delete Board
 
-export default router;
+export default kanbanRouter;

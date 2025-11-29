@@ -1,12 +1,12 @@
 import express from "express";
 import { createDocument, getDocuments, editDocument, deleteDocument } from "../controllers/documentController.js";
-import { protect } from "../middlewares/authMiddleware.js";
+import { isAuthenticated } from "../middleware/authMiddleware.js";
 
-const router = express.Router();
+const documentRouter = express.Router();
 
-router.post("/", protect, createDocument);        // Create Document
-router.get("/:projectId", protect, getDocuments); // Get Documents of Project
-router.put("/:docId", protect, editDocument);     // Edit Document
-router.delete("/:docId", protect, deleteDocument); // Delete Document
+documentRouter.post("/", isAuthenticated, createDocument);        // Create Document
+documentRouter.get("/:projectId", isAuthenticated, getDocuments); // Get Documents of Project
+documentRouter.put("/:docId", isAuthenticated, editDocument);     // Edit Document
+documentRouter.delete("/:docId", isAuthenticated, deleteDocument); // Delete Document
 
-export default router;
+export default documentRouter;

@@ -5,20 +5,20 @@ import {
   editProject, 
   deleteProject 
 } from "../controllers/projectController.js";
-import { protect } from "../middlewares/authMiddleware.js";
+import { isAuthenticated } from "../middleware/authMiddleware.js";
 
-const router = express.Router();
+const ProjectRouter = express.Router();
 
 // Create project (workspace member)
-router.post("/", protect, createProject);
+ProjectRouter.post("/", isAuthenticated, createProject);
 
 // Get all projects in a workspace (workspace member)
-router.get("/:workspaceId", protect, getProjects);
+ProjectRouter.get("/:workspaceId", isAuthenticated, getProjects);
 
 // Edit project (admin/manager)
-router.put("/:projectId", protect, editProject);
+ProjectRouter.put("/:projectId", isAuthenticated, editProject);
 
 // Delete project (admin only)
-router.delete("/:projectId", protect, deleteProject);
+ProjectRouter.delete("/:projectId", isAuthenticated, deleteProject);
 
-export default router;
+export default ProjectRouter;

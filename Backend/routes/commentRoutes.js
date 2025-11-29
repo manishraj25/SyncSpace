@@ -6,20 +6,20 @@ import {
   editComment,
   deleteComment,
 } from "../controllers/commentController.js";
-import { protect } from "../middlewares/authMiddleware.js";
+import { isAuthenticated } from "../middleware/authMiddleware.js";
 
-const router = express.Router();
+const commentRouter = express.Router();
 
 // Add a comment to a task
-router.post("/", protect, addComment);
+commentRouter.post("/", isAuthenticated, addComment);
 
 // Get all comments for a task
-router.get("/:taskId", protect, getComments);
+commentRouter.get("/:taskId", isAuthenticated, getComments);
 
 // Edit a comment
-router.put("/:commentId", protect, editComment);
+commentRouter.put("/:commentId", isAuthenticated, editComment);
 
 // Delete a comment
-router.delete("/:commentId", protect, deleteComment);
+commentRouter.delete("/:commentId", isAuthenticated, deleteComment);
 
-export default router;
+export default commentRouter;
