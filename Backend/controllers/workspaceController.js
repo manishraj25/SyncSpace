@@ -1,7 +1,9 @@
 import Workspace from "../models/Workspace.js";
 import User from "../models/User.js";
+import ChatRoom from "../models/ChatRoom.js";
+import { PERMISSIONS } from "../config/permissions.js";
 
-// Create Workspace
+// ---------------- CREATE WORKSPACE ----------------
 export const createWorkspace = async (req, res) => {
   try {
     const { name, description } = req.body;
@@ -13,9 +15,19 @@ export const createWorkspace = async (req, res) => {
       members: [{ user: req.user.id, role: "admin" }],
     });
 
-    const user = await User.findById(req.user.id);
-    user.workspaces.push(workspace._id);
-    await user.save();
+    // Auto create chat room
+    const chatRoom = await ChatRoom.create({
+      workspace: workspace._id,
+      members: [req.user.id],
+    });
+
+    workspace.chatChannel = chatRoom._id;
+    await workspace.save();
+
+    // Add workspace to user's list
+    await User.findByIdAndUpdate(req.user.id, {
+      $addToSet: { workspaces: workspace._id },
+    });
 
     res.json({ workspace });
   } catch (err) {
@@ -23,17 +35,26 @@ export const createWorkspace = async (req, res) => {
   }
 };
 
-// Edit Workspace (Admin only)
-export const editWorkspace = async (req, res) => {
-  const { workspaceId } = req.params;
-  const { name, description } = req.body;
+// ---------------- HELPER: CHECK PERMISSION ----------------
+const hasPermission = (workspace, userId, permission) => {
+  const member = workspace.members.find(m => m.user.toString() === userId);
+  if (!member) return false;
 
+  const role = member.role.toUpperCase();
+  return PERMISSIONS[role] && PERMISSIONS[role].includes(permission);
+};
+
+// ---------------- EDIT WORKSPACE ----------------
+export const editWorkspace = async (req, res) => {
   try {
+    const { workspaceId } = req.params;
+    const { name, description } = req.body;
+
     const workspace = await Workspace.findById(workspaceId);
     if (!workspace) return res.status(404).json({ message: "Workspace not found" });
 
-    const member = workspace.members.find(m => m.user.toString() === req.user.id);
-    if (!member || member.role !== "admin") return res.status(403).json({ message: "Not authorized" });
+    if (!hasPermission(workspace, req.user.id, "WORKSPACE_EDIT"))
+      return res.status(403).json({ message: "Not authorized" });
 
     workspace.name = name || workspace.name;
     workspace.description = description || workspace.description;
@@ -45,19 +66,21 @@ export const editWorkspace = async (req, res) => {
   }
 };
 
-// Delete Workspace (Admin only)
+// ---------------- DELETE WORKSPACE ----------------
 export const deleteWorkspace = async (req, res) => {
-  const { workspaceId } = req.params;
-
   try {
+    const { workspaceId } = req.params;
     const workspace = await Workspace.findById(workspaceId);
     if (!workspace) return res.status(404).json({ message: "Workspace not found" });
 
-    const member = workspace.members.find(m => m.user.toString() === req.user.id);
-    if (!member || member.role !== "admin") return res.status(403).json({ message: "Not authorized" });
+    if (!hasPermission(workspace, req.user.id, "WORKSPACE_DELETE"))
+      return res.status(403).json({ message: "Not authorized" });
 
-    await workspace.remove();
+    // Delete workspace and chat
+    await workspace.deleteOne();
+    if (workspace.chatChannel) await ChatRoom.findByIdAndDelete(workspace.chatChannel);
 
+    // Remove workspace from all users
     await User.updateMany(
       { workspaces: workspaceId },
       { $pull: { workspaces: workspaceId } }
@@ -69,25 +92,32 @@ export const deleteWorkspace = async (req, res) => {
   }
 };
 
-// Add member
+// ---------------- ADD MEMBER ----------------
 export const addMember = async (req, res) => {
-  const { workspaceId, userId, role } = req.body;
   try {
+    const { workspaceId } = req.params;
+    const { userId, role } = req.body;
+
     const workspace = await Workspace.findById(workspaceId);
     if (!workspace) return res.status(404).json({ message: "Workspace not found" });
 
-    const member = workspace.members.find(m => m.user.toString() === req.user.id);
-    if (!member || member.role !== "admin") return res.status(403).json({ message: "Not authorized" });
+    if (!hasPermission(workspace, req.user.id, "MEMBER_MANAGE"))
+      return res.status(403).json({ message: "Not authorized" });
 
-    const exists = workspace.members.find(m => m.user.toString() === userId);
+    const exists = workspace.members.some(m => m.user.toString() === userId);
     if (exists) return res.status(400).json({ message: "User already a member" });
 
     workspace.members.push({ user: userId, role });
     await workspace.save();
 
-    const user = await User.findById(userId);
-    if (!user.workspaces.includes(workspaceId)) user.workspaces.push(workspaceId);
-    await user.save();
+    // Auto Add to Chat Room
+    await ChatRoom.findByIdAndUpdate(workspace.chatChannel, {
+      $addToSet: { members: userId },
+    });
+
+    await User.findByIdAndUpdate(userId, {
+      $addToSet: { workspaces: workspaceId },
+    });
 
     res.json({ workspace });
   } catch (err) {
@@ -95,22 +125,36 @@ export const addMember = async (req, res) => {
   }
 };
 
-// Remove member
+// ---------------- REMOVE MEMBER ----------------
 export const removeMember = async (req, res) => {
-  const { workspaceId, userId } = req.body;
   try {
+    const { workspaceId } = req.params;
+    const { userId } = req.body;
+
     const workspace = await Workspace.findById(workspaceId);
     if (!workspace) return res.status(404).json({ message: "Workspace not found" });
 
-    const member = workspace.members.find(m => m.user.toString() === req.user.id);
-    if (!member || member.role !== "admin") return res.status(403).json({ message: "Not authorized" });
+    if (!hasPermission(workspace, req.user.id, "MEMBER_MANAGE"))
+      return res.status(403).json({ message: "Not authorized" });
+
+    const isTargetAdmin = workspace.members.find(
+      m => m.user.toString() === userId && m.role === "admin"
+    );
+
+    const adminCount = workspace.members.filter(m => m.role === "admin").length;
+    if (isTargetAdmin && adminCount === 1)
+      return res.status(400).json({ message: "Cannot remove last admin" });
 
     workspace.members = workspace.members.filter(m => m.user.toString() !== userId);
     await workspace.save();
 
-    const user = await User.findById(userId);
-    user.workspaces = user.workspaces.filter(w => w.toString() !== workspaceId);
-    await user.save();
+    await ChatRoom.findByIdAndUpdate(workspace.chatChannel, {
+      $pull: { members: userId },
+    });
+
+    await User.findByIdAndUpdate(userId, {
+      $pull: { workspaces: workspaceId },
+    });
 
     res.json({ workspace });
   } catch (err) {
@@ -118,20 +162,22 @@ export const removeMember = async (req, res) => {
   }
 };
 
-// Change member role
+// ---------------- CHANGE MEMBER ROLE ----------------
 export const changeMemberRole = async (req, res) => {
-  const { workspaceId, userId, role } = req.body;
   try {
+    const { workspaceId } = req.params;
+    const { userId, role } = req.body;
+
     const workspace = await Workspace.findById(workspaceId);
     if (!workspace) return res.status(404).json({ message: "Workspace not found" });
 
-    const member = workspace.members.find(m => m.user.toString() === req.user.id);
-    if (!member || member.role !== "admin") return res.status(403).json({ message: "Not authorized" });
+    if (!hasPermission(workspace, req.user.id, "MEMBER_MANAGE"))
+      return res.status(403).json({ message: "Not authorized" });
 
-    const targetMember = workspace.members.find(m => m.user.toString() === userId);
-    if (!targetMember) return res.status(404).json({ message: "Member not found" });
+    const target = workspace.members.find(m => m.user.toString() === userId);
+    if (!target) return res.status(404).json({ message: "User not found" });
 
-    targetMember.role = role;
+    target.role = role;
     await workspace.save();
 
     res.json({ workspace });
@@ -140,11 +186,14 @@ export const changeMemberRole = async (req, res) => {
   }
 };
 
-// Get members
+// ---------------- GET ALL MEMBERS ----------------
 export const getWorkspaceMembers = async (req, res) => {
   try {
     const workspace = await Workspace.findById(req.params.workspaceId)
       .populate("members.user", "name email avatar");
+
+    if (!workspace) return res.status(404).json({ message: "Workspace not found" });
+
     res.json({ members: workspace.members });
   } catch (err) {
     res.status(500).json({ message: err.message });
